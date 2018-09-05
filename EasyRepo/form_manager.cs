@@ -1,4 +1,6 @@
 ﻿using ICSharpCode.SharpZipLib.BZip2;
+using ICSharpCode.SharpZipLib.GZip;
+using SevenZipExtractor;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -6,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Windows.Forms;
+using System.IO.Compression;
 
 namespace EasyRepo
 {
@@ -14,11 +17,13 @@ namespace EasyRepo
         public string repoPath;
         private string exePath = Path.GetDirectoryName(Application.ExecutablePath);
         private string cfgPath = Path.GetDirectoryName(Application.ExecutablePath) + @"\config.cfg";
+        private string tmpPath;
         private List<List<string>> Packages;
 
         public form_manager(string path, bool overwrite = false)
         {
             InitializeComponent();
+            tmpPath = path + @"\tmp";
             repoPath = path;
             if (!Directory.Exists(repoPath + @"\debs") || !File.Exists(repoPath + @"\Release"))
             {
@@ -55,15 +60,8 @@ namespace EasyRepo
         private void button_buildPackages_Click(object sender, EventArgs e)
         {
             Packages = GetPackages();
-            if (!Directory.Exists(repoPath + @"\tmp"))
-            {
-                Directory.CreateDirectory(repoPath + @"\tmp");
-            }
-            else
-            {
-                Directory.GetFiles(repoPath + @"\tmp").ToList().ForEach(x => File.Delete(x));
-            }
-            using (StreamWriter writer = new StreamWriter(File.Create(repoPath + @"\tmp\Packages")))
+            Directory.CreateDirectory(tmpPath);
+            using (StreamWriter writer = new StreamWriter(File.Create(tmpPath + @"\Packages")))
             {
                 foreach (List<string> package in Packages)
                 {
@@ -74,7 +72,7 @@ namespace EasyRepo
                     writer.WriteLine("");
                 }
             }
-            using (FileStream packagesFile = new FileInfo(repoPath + @"\tmp\Packages").OpenRead())
+            using (FileStream packagesFile = new FileInfo(tmpPath + @"\Packages").OpenRead())
             {
                 using (FileStream bzfile = File.Create(repoPath + @"\Packages.bz2"))
                 {
@@ -88,20 +86,18 @@ namespace EasyRepo
                     }
                 }
             }
-            Directory.GetFiles(repoPath + @"\tmp").ToList().ForEach(x => File.Delete(x));
-            Directory.Delete(repoPath + @"\tmp", true);
+            Directory.GetFiles(tmpPath).ToList().ForEach(x => File.Delete(x));
+            Directory.Delete(tmpPath, true);
         }
 
         private List<List<string>> GetPackages()
         {
-            if (!Directory.Exists(repoPath + @"\tmp"))
+            if (Directory.Exists(tmpPath))
             {
-                Directory.CreateDirectory(repoPath + @"\tmp");
+                Directory.GetFiles(tmpPath).ToList().ForEach(x => File.Delete(x));
+                Directory.Delete(tmpPath, true);
             }
-            else
-            {
-                Directory.GetFiles(repoPath + @"\tmp").ToList().ForEach(x => File.Delete(x));
-            }
+            Directory.CreateDirectory(tmpPath);
             List<List<string>> packages = new List<List<string>>();
             if (!Directory.Exists(repoPath + @"\debs"))
             {
@@ -111,12 +107,21 @@ namespace EasyRepo
             {
                 foreach (string file in Directory.GetFiles(repoPath + @"\debs"))
                 {
-                    Process.Start(@"C:\Windows\System32\tar.exe", $@"-x -v -f {file} -C {repoPath}\tmp").WaitForExit();
-                    Process.Start(@"C:\Windows\System32\tar.exe", $@"-x -v -f {repoPath}\tmp\control.tar.gz -C {repoPath}\tmp").WaitForExit();
-                    if (File.Exists(repoPath + @"\tmp\control"))
+                    ArchiveFile deb = new ArchiveFile(file);
+                    deb.Extract(tmpPath);
+                    deb.Dispose();
+                    Stream stream = File.OpenRead(tmpPath + @"\control.tar.gz");
+                    Stream control = File.Create(tmpPath + @"\control.tar");
+                    GZip.Decompress(stream, control, false);
+                    stream.Close();
+                    control.Close();
+                    ArchiveFile controlTar = new ArchiveFile(tmpPath + @"\control.tar");
+                    controlTar.Extract(tmpPath);
+                    controlTar.Dispose();
+                    if (File.Exists(tmpPath + @"\control"))
                     {
                         var filestream = File.OpenRead(file);
-                        var package = File.ReadAllLines(repoPath + @"\tmp\control").ToList();
+                        var package = File.ReadAllLines(tmpPath + @"\control").ToList();
                         package.Add("Filename: debs/" + file.Substring(file.LastIndexOf(@"\") + 1));
                         package.Add("Size: " + new FileInfo(file).Length);
                         package.Add("MD5sum: " + BitConverter.ToString(MD5.Create().ComputeHash(filestream)).Replace("-", "").ToLowerInvariant());
@@ -128,9 +133,9 @@ namespace EasyRepo
                     {
                         MessageBox.Show($"There is no control file in the package '{file}'.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
-                    Directory.GetFiles(repoPath + @"\tmp").ToList().ForEach(x => File.Delete(x));
+                    Directory.GetFiles(tmpPath).ToList().ForEach(x => File.Delete(x));
                 }
-                Directory.Delete(repoPath + @"\tmp", true);
+                Directory.Delete(tmpPath, true);
             }
             return packages;
         }
@@ -147,7 +152,14 @@ namespace EasyRepo
             debDialog.Title = "Select a .deb file.";
             if (debDialog.ShowDialog() == DialogResult.OK)
             {
-                File.Copy(debDialog.FileName, repoPath + @"\debs\" + debDialog.FileName.Substring(debDialog.FileName.LastIndexOf(@"\") + 1));
+                if (File.Exists(repoPath + @"\debs\" + debDialog.FileName.Substring(debDialog.FileName.LastIndexOf(@"\") + 1)))
+                {
+                    MessageBox.Show("You have already added that package.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                else
+                {
+                    File.Copy(debDialog.FileName, repoPath + @"\debs\" + debDialog.FileName.Substring(debDialog.FileName.LastIndexOf(@"\") + 1));
+                }
             }
             button_refreshPackages_Click(sender, e);
         }
@@ -162,6 +174,7 @@ namespace EasyRepo
             label_repoPath.Text = repoPath;
             Packages = GetPackages();
             combo_packages.Items.Clear();
+            combo_packages.Text = "";
             foreach (List<string> package in Packages)
             {
                 var name = "";
