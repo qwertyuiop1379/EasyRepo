@@ -13,6 +13,17 @@ namespace EasyRepo
             InitializeComponent();
         }
 
+        protected override void OnMouseDown(MouseEventArgs e)
+        {
+            base.OnMouseDown(e);
+            if (e.Button == MouseButtons.Left)
+            {
+                Capture = false;
+                Message msg = Message.Create(Handle, 0XA1, new IntPtr(2), IntPtr.Zero);
+                WndProc(ref msg);
+            }
+        }
+
         private void button_close_Click(object sender, EventArgs e)
         {
             Application.Exit();
@@ -37,23 +48,23 @@ namespace EasyRepo
                             File.Delete(repoPath + @"\CydiaIcon.png");
                         }
                         File.Copy(fileDialog.FileName, repoPath + @"\CydiaIcon.png");
+                        Directory.CreateDirectory(repoPath + @"\debs");
+                        Directory.CreateDirectory(repoPath + @"\depictions");
+                        using (var stream = new StreamWriter(repoPath + @"\Release", true))
+                        {
+                            var repoName = Prompt.ShowDialog("Repository name", "Info");
+                            stream.WriteLine("Origin: " + repoName);
+                            stream.WriteLine("Label: " + repoName);
+                            stream.WriteLine("Suite: stable");
+                            stream.WriteLine("Version: 1.0");
+                            stream.WriteLine("Codename: " + Prompt.ShowDialog("Code name", "Info"));
+                            stream.WriteLine("Architectures: iphoneos-arm");
+                            stream.WriteLine("Components: main");
+                            stream.WriteLine("Description: " + Prompt.ShowDialog("Repository description", "Info"));
+                        }
+                        new form_manager(repoPath, true).Show();
+                        Hide();
                     }
-                    Directory.CreateDirectory(repoPath + @"\debs");
-                    Directory.CreateDirectory(repoPath + @"\depictions");
-                    using (var stream = new StreamWriter(repoPath + @"\Release", true))
-                    {
-                        var repoName = Prompt.ShowDialog("Repository name", "Info");
-                        stream.WriteLine("Origin: " + repoName);
-                        stream.WriteLine("Label: " + repoName);
-                        stream.WriteLine("Suite: stable");
-                        stream.WriteLine("Version: 1.0");
-                        stream.WriteLine("Codename: " + Prompt.ShowDialog("Code name", "Info"));
-                        stream.WriteLine("Architectures: iphoneos-arm");
-                        stream.WriteLine("Components: main");
-                        stream.WriteLine("Description: " + Prompt.ShowDialog("Repository description", "Info"));
-                    }
-                    new form_manager(repoPath, true).Show();
-                    Hide();
                 }
                 else
                 {

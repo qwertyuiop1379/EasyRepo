@@ -23,7 +23,6 @@ namespace EasyRepo
             if (!Directory.Exists(repoPath + @"\debs") || !File.Exists(repoPath + @"\Release"))
             {
                 File.Delete(cfgPath);
-                Application.Restart();
             }
             else
             {
@@ -39,6 +38,17 @@ namespace EasyRepo
                         stream.WriteLine($"REPOPATH={repoPath}");
                     }
                 }
+            }
+        }
+
+        protected override void OnMouseDown(MouseEventArgs e)
+        {
+            base.OnMouseDown(e);
+            if (e.Button == MouseButtons.Left)
+            {
+                Capture = false;
+                Message msg = Message.Create(Handle, 0XA1, new IntPtr(2), IntPtr.Zero);
+                WndProc(ref msg);
             }
         }
 

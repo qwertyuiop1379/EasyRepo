@@ -195,6 +195,7 @@
             this.Controls.Add(this.button_close);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.Name = "form_manager";
+            this.ShowIcon = false;
             this.Text = "form_manager";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.form_manager_FormClosed);
             this.Load += new System.EventHandler(this.form_manager_Load);
