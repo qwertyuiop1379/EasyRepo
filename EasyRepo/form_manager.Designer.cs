@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(form_manager));
             this.button_close = new System.Windows.Forms.Button();
             this.button_buildPackages = new System.Windows.Forms.Button();
             this.button_addpackage = new System.Windows.Forms.Button();
@@ -194,8 +195,8 @@
             this.Controls.Add(this.button_buildPackages);
             this.Controls.Add(this.button_close);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "form_manager";
-            this.ShowIcon = false;
             this.Text = "form_manager";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.form_manager_FormClosed);
             this.Load += new System.EventHandler(this.form_manager_Load);

@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("EasyRepo")]
+[assembly: AssemblyTitle("EasyRepoSetup")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("EasyRepo")]
+[assembly: AssemblyProduct("EasyRepoSetup")]
 [assembly: AssemblyCopyright("Copyright ©  2018")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("41faa1bb-e443-417e-a8b8-81572a7b190e")]
+[assembly: Guid("d6387213-3ca2-4512-8b26-d18b354004e3")]
 
 // Version information for an assembly consists of the following four values:
 //

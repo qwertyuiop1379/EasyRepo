@@ -172,8 +172,8 @@
             this.Controls.Add(this.label1);
             this.Controls.Add(this.button_createRepo);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "form_init";
-            this.ShowIcon = false;
             this.ResumeLayout(false);
             this.PerformLayout();
 
