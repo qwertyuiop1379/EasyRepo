@@ -107,7 +107,7 @@ namespace EasyRepo
             {
                 foreach (string file in Directory.GetFiles(repoPath + @"\debs"))
                 {
-                    ArchiveFile deb = new ArchiveFile(file);
+                    ArchiveFile deb = new ArchiveFile(file, exePath + @"\7z64.dll");
                     deb.Extract(tmpPath);
                     deb.Dispose();
                     Stream stream = File.OpenRead(tmpPath + @"\control.tar.gz");
@@ -115,7 +115,7 @@ namespace EasyRepo
                     GZip.Decompress(stream, control, false);
                     stream.Close();
                     control.Close();
-                    ArchiveFile controlTar = new ArchiveFile(tmpPath + @"\control.tar");
+                    ArchiveFile controlTar = new ArchiveFile(tmpPath + @"\control.tar", exePath = @"\7z64.dll");
                     controlTar.Extract(tmpPath);
                     controlTar.Dispose();
                     if (File.Exists(tmpPath + @"\control"))
