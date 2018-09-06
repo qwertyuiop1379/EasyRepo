@@ -56,7 +56,8 @@ namespace EasyRepoSetup
             {
                 client.DownloadFile("https://github.com/qwertyuiop1379/EasyRepo/raw/master/ICSharpCode.SharpZipLib.dll", text_path.Text + @"\ICSharpCode.SharpZipLib.dll");
                 client.DownloadFile("https://github.com/qwertyuiop1379/EasyRepo/raw/master/SevenZipExtractor.dll", text_path.Text + @"\SevenZipExtractor.dll");
-                client.DownloadFile("https://github.com/qwertyuiop1379/EasyRepo/raw/master/EasyRepoReleasePublic.exe", text_path.Text + @"\EasyRepo.exe");
+                client.DownloadFile("https://github.com/qwertyuiop1379/EasyRepo/raw/master/EasyRepo.exe", text_path.Text + @"\EasyRepo.exe");
+                client.DownloadFile("https://github.com/qwertyuiop1379/EasyRepo/raw/master/icon.ico", text_path.Text + @"\icon.ico");
             }
             if (check_desktop.Checked)
             {
@@ -65,7 +66,7 @@ namespace EasyRepoSetup
                     writer.WriteLine("[InternetShortcut]");
                     writer.WriteLine($@"URL=file:///{text_path.Text}\EasyRepo.exe");
                     writer.WriteLine("IconIndex=0");
-                    writer.WriteLine($@"IconFile={text_path.Text}\EasyRepo.exe");
+                    writer.WriteLine($@"IconFile={text_path.Text}\icon.ico");
                     writer.Flush();
                 }
             }
