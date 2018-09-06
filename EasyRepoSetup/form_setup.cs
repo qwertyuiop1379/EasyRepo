@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.IO;
 using System.Net;
 using System.Windows.Forms;
@@ -11,6 +12,8 @@ namespace EasyRepoSetup
         {
             InitializeComponent();
         }
+
+        private string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
 
         protected override void OnMouseDown(MouseEventArgs e)
         {
@@ -63,17 +66,22 @@ namespace EasyRepoSetup
                 client.DownloadFile("https://github.com/qwertyuiop1379/EasyRepo/raw/master/7z64.dll", text_path.Text + @"\x64\7z.dll");
                 client.DownloadFile("https://github.com/qwertyuiop1379/EasyRepo/raw/master/7z86.dll", text_path.Text + @"\x86\7z.dll");
             }
+
+            var registryKey = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers", true);
+            registryKey.SetValue(text_path.Text + @"\EasyRepo.exe", "RUNASADMIN");
+
             if (check_desktop.Checked)
             {
-                using (StreamWriter writer = new StreamWriter(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory) + @"\EasyRepo.url"))
-                {
-                    writer.WriteLine("[InternetShortcut]");
-                    writer.WriteLine($@"URL=file:///{text_path.Text}\EasyRepo.exe");
-                    writer.WriteLine("IconIndex=0");
-                    writer.WriteLine($@"IconFile={text_path.Text}\icon.ico");
-                    writer.Flush();
-                }
+                File.Delete(desktopPath + @"EasyRepo.lnk");
+                IWshRuntimeLibrary.WshShell shell = new IWshRuntimeLibrary.WshShell();
+                IWshRuntimeLibrary.IWshShortcut shortcut = (IWshRuntimeLibrary.IWshShortcut)shell.CreateShortcut(desktopPath + @"\EasyRepo.lnk");
+                shortcut.Description = "Easily manage Cydia repos";
+                shortcut.IconLocation = text_path.Text + @"\icon.ico";
+                shortcut.TargetPath = text_path.Text + @"\EasyRepo.exe";
+                shortcut.Save();
             }
+            MessageBox.Show("Done", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            Application.Exit();
         }
 
         private void button_browse_Click(object sender, EventArgs e)

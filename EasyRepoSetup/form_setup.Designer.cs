@@ -1,4 +1,7 @@
-﻿namespace EasyRepoSetup
+﻿using System.IO;
+using System.Windows.Forms;
+
+namespace EasyRepoSetup
 {
     partial class form_setup
     {
@@ -89,7 +92,7 @@
             this.label2.Size = new System.Drawing.Size(426, 30);
             this.label2.TabIndex = 4;
             this.label2.Text = "Easy repo is a program that simplifies the creation and management of Cydia repos" +
-    "itories.";
+    "itories. (Please run this setup as admin)";
             // 
             // button_confirm
             // 
