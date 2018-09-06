@@ -52,12 +52,16 @@ namespace EasyRepoSetup
             {
                 Directory.CreateDirectory(text_path.Text);
             }
+            Directory.CreateDirectory(Path.Combine(text_path.Text, "x64"));
+            Directory.CreateDirectory(Path.Combine(text_path.Text, "x86"));
             using (WebClient client = new WebClient())
             {
                 client.DownloadFile("https://github.com/qwertyuiop1379/EasyRepo/raw/master/ICSharpCode.SharpZipLib.dll", text_path.Text + @"\ICSharpCode.SharpZipLib.dll");
                 client.DownloadFile("https://github.com/qwertyuiop1379/EasyRepo/raw/master/SevenZipExtractor.dll", text_path.Text + @"\SevenZipExtractor.dll");
                 client.DownloadFile("https://github.com/qwertyuiop1379/EasyRepo/raw/master/EasyRepo.exe", text_path.Text + @"\EasyRepo.exe");
                 client.DownloadFile("https://github.com/qwertyuiop1379/EasyRepo/raw/master/icon.ico", text_path.Text + @"\icon.ico");
+                client.DownloadFile("https://github.com/qwertyuiop1379/EasyRepo/raw/master/7z64.dll", text_path.Text + @"\x64\7z.dll");
+                client.DownloadFile("https://github.com/qwertyuiop1379/EasyRepo/raw/master/7z86.dll", text_path.Text + @"\x86\7z.dll");
             }
             if (check_desktop.Checked)
             {
