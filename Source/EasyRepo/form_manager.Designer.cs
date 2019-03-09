@@ -173,9 +173,8 @@
             this.label_repoPath.ForeColor = System.Drawing.Color.White;
             this.label_repoPath.Location = new System.Drawing.Point(309, 44);
             this.label_repoPath.Name = "label_repoPath";
-            this.label_repoPath.Size = new System.Drawing.Size(63, 13);
+            this.label_repoPath.Size = new System.Drawing.Size(0, 13);
             this.label_repoPath.TabIndex = 17;
-            this.label_repoPath.Text = "Placeholder";
             this.label_repoPath.Click += new System.EventHandler(this.label_repoPath_Click);
             // 
             // form_manager

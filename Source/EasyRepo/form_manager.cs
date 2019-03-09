@@ -1,6 +1,4 @@
 ﻿using ICSharpCode.SharpZipLib.BZip2;
-using ICSharpCode.SharpZipLib.GZip;
-using SevenZipExtractor;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -8,7 +6,6 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Windows.Forms;
-using System.IO.Compression;
 
 namespace EasyRepo
 {
@@ -25,6 +22,19 @@ namespace EasyRepo
             InitializeComponent();
             tmpPath = path + @"\tmp";
             repoPath = path;
+            if (File.Exists(cfgPath))
+            {
+                try
+                {
+                    var cfgTest = File.OpenRead(cfgPath);
+                    cfgTest.Close();
+                }
+                catch
+                {
+                    MessageBox.Show("Please run as administrator.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    Application.Exit();
+                }
+            }
             if (!Directory.Exists(repoPath + @"\debs") || !File.Exists(repoPath + @"\Release"))
             {
                 File.Delete(cfgPath);
@@ -105,23 +115,32 @@ namespace EasyRepo
             }
             else
             {
+                if (!File.Exists(@"C:\Windows\System32\tar.exe"))
+                {
+                    MessageBox.Show("You haven't updated your computer as of April 2018. This means that your computer doesn't have a file needed to run EasyRepo. It's not legal for me to install it to your computer, so you must update your computer before you can use this program.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    Application.Exit();
+                }
+
                 foreach (string file in Directory.GetFiles(repoPath + @"\debs"))
                 {
-                    ArchiveFile deb = new ArchiveFile(file, exePath + @"\7z64.dll");
-                    deb.Extract(tmpPath);
-                    deb.Dispose();
-                    Stream stream = File.OpenRead(tmpPath + @"\control.tar.gz");
-                    Stream control = File.Create(tmpPath + @"\control.tar");
-                    GZip.Decompress(stream, control, false);
-                    stream.Close();
-                    control.Close();
-                    ArchiveFile controlTar = new ArchiveFile(tmpPath + @"\control.tar", exePath = @"\7z64.dll");
-                    controlTar.Extract(tmpPath);
-                    controlTar.Dispose();
-                    if (File.Exists(tmpPath + @"\control"))
+                    ProcessStartInfo info = new ProcessStartInfo
+                    {
+                        FileName = @"C:\Windows\System32\tar.exe",
+                        Arguments = $@"-x -v -f {file} -C {repoPath}\tmp",
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
+                        UseShellExecute = false,
+                        CreateNoWindow = true
+                    };
+                    Process.Start(info).WaitForExit();
+
+                    info.Arguments = $@"-x -v -f {repoPath}\tmp\control.tar.gz -C {repoPath}\tmp";
+                    Process.Start(info).WaitForExit();
+
+                    if (File.Exists(repoPath + @"\tmp\control"))
                     {
                         var filestream = File.OpenRead(file);
-                        var package = File.ReadAllLines(tmpPath + @"\control").ToList();
+                        var package = File.ReadAllLines(repoPath + @"\tmp\control").ToList();
                         package.Add("Filename: debs/" + file.Substring(file.LastIndexOf(@"\") + 1));
                         package.Add("Size: " + new FileInfo(file).Length);
                         package.Add("MD5sum: " + BitConverter.ToString(MD5.Create().ComputeHash(filestream)).Replace("-", "").ToLowerInvariant());
@@ -133,7 +152,7 @@ namespace EasyRepo
                     {
                         MessageBox.Show($"There is no control file in the package '{file}'.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
-                    Directory.GetFiles(tmpPath).ToList().ForEach(x => File.Delete(x));
+                    Directory.GetFiles(repoPath + @"\tmp").ToList().ForEach(x => File.Delete(x));
                 }
                 Directory.Delete(tmpPath, true);
             }
